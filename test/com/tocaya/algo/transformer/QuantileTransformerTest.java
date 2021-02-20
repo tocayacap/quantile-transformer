@@ -43,8 +43,8 @@ public class QuantileTransformerTest {
 				x_train_py.callMethod("put", i, Double.NaN);
 			}
 		}
-		double[] x_train_java = TocayaUtils.toDoubleArray(x_train_py.callMethod("ravel").callMethod("tolist").asList().stream()
-				.map(PyObject::getDoubleValue).collect(Collectors.toList()), true);
+		double[] x_train_java = QuantileTransformer.toDoubleArray(x_train_py.callMethod("ravel").callMethod("tolist").asList().stream()
+				.map(PyObject::getDoubleValue).collect(Collectors.toList()).toArray(), true);
 		PyObject x_test_py = PyModule.importModule("numpy.random").callMethod("rand", testLen, 1);
 		for (int i = 0; i < testLen; i++) {
 			if (r.nextDouble() > 0.95) {
@@ -55,25 +55,25 @@ public class QuantileTransformerTest {
 				x_test_py.callMethod("put", i, 1 + r.nextDouble());
 			}
 		}
-		double[] x_test_java = TocayaUtils.toDoubleArray(x_test_py.callMethod("ravel").callMethod("tolist").asList().stream()
-				.map(PyObject::getDoubleValue).collect(Collectors.toList()), true);
+		double[] x_test_java = QuantileTransformer.toDoubleArray(x_test_py.callMethod("ravel").callMethod("tolist").asList().stream()
+				.map(PyObject::getDoubleValue).collect(Collectors.toList()).toArray(), true);
 
 		PyObject x_train_len_py = PyModule.getBuiltins().call("len", x_train_py);
 		PyObject qt_py = PyModule.importModule("sklearn.preprocessing").callMethod("QuantileTransformer", x_train_len_py, "uniform", false,
 				x_train_len_py);
 		qt_py.callMethod("fit", x_train_py);
 		PyObject out_py = qt_py.callMethod("transform", x_test_py);
-		double[] out_java = TocayaUtils.toDoubleArray(out_py.callMethod("ravel").callMethod("tolist").asList().stream()
-				.map(PyObject::getDoubleValue).collect(Collectors.toList()), true);
+		double[] out_java = QuantileTransformer.toDoubleArray(out_py.callMethod("ravel").callMethod("tolist").asList().stream()
+				.map(PyObject::getDoubleValue).collect(Collectors.toList()).toArray(), true);
 
 		QuantileTransformer aqt = new QuantileTransformer(x_train_java.length, x_train_java.length);
 
 		int nQuantiles = qt_py.getAttribute("n_quantiles", Integer.class);
 		int subsample = qt_py.getAttribute("subsample", Integer.class);
-		double[] references = TocayaUtils.toDoubleArray(qt_py.getAttribute("references_").callMethod("ravel").callMethod("tolist").asList()
-				.stream().map(PyObject::getDoubleValue).collect(Collectors.toList()), true);
-		double[] quantiles = TocayaUtils.toDoubleArray(qt_py.getAttribute("quantiles_").callMethod("ravel").callMethod("tolist").asList().stream()
-				.map(PyObject::getDoubleValue).collect(Collectors.toList()), true);
+		double[] references = QuantileTransformer.toDoubleArray(qt_py.getAttribute("references_").callMethod("ravel").callMethod("tolist").asList()
+				.stream().map(PyObject::getDoubleValue).collect(Collectors.toList()).toArray(), true);
+		double[] quantiles = QuantileTransformer.toDoubleArray(qt_py.getAttribute("quantiles_").callMethod("ravel").callMethod("tolist").asList().stream()
+				.map(PyObject::getDoubleValue).collect(Collectors.toList()).toArray(), true);
 
 		QuantileTransformer aqt2 = new QuantileTransformer(nQuantiles, subsample, references, quantiles);
 		aqt.fit(x_train_java);
